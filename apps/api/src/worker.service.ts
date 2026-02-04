@@ -23,8 +23,11 @@ export class OrderStatusWorker implements OnModuleInit {
       const status = order.attempts >= 3 ? "active" : "pending"
       updateOrderStatus(orderId, status)
 
-      if (status === "pending") {
+      if (status === "pending" && order.attempts <= 5) {
         setTimeout(() => this.rabbit.publishStatusCheck(orderId), 3000)
+      } else if (status === "pending" && order.attempts > 5) {
+        updateOrderStatus(orderId, "failed")
+        this.rabbit.publishDlq(orderId, "max_attempts_exceeded")
       }
 
       channel.ack(msg)
