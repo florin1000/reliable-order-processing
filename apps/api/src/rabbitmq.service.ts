@@ -16,3 +16,8 @@ export class RabbitMqService implements OnModuleInit {
     }
   }
 }
+
+  async publishStatusCheck(orderId: string) {
+    if (!this.channel) return
+    this.channel.sendToQueue("order-status", Buffer.from(orderId), { persistent: true })
+  }

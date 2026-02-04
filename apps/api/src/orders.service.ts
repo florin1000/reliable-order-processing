@@ -1,19 +1,11 @@
 import { orders, OrderRecord, OrderStatus } from "./orders.store"
 
-const MAX_RETRIES = 3
-const RETRY_INTERVAL_MS = 2000
+import { RabbitMqService } from "./rabbitmq.service"
 
-function simulateMicrosoftStatus(order: OrderRecord): OrderStatus {
-  if (order.attempts >= 2) {
-    return "active"
-  }
-  return "pending"
-}
-
-export function createOrder(action: OrderRecord["action"]) {
+export function createOrder(action: OrderRecord["action"], rabbit?: RabbitMqService) {
   const id = `ord_${Date.now()}`
   orders[id] = { id, action, status: "pending", attempts: 0 }
-  retryUntilActive(id)
+  rabbit?.publishStatusCheck(id)
   return orders[id]
 }
 
@@ -21,24 +13,20 @@ export function listOrders() {
   return Object.values(orders)
 }
 
-function retryUntilActive(id: string) {
-  const tick = () => {
-    const order = orders[id]
-    if (!order) return
+export function updateOrderStatus(id: string, status: OrderStatus) {
+  const order = orders[id]
+  if (!order) return
+  order.status = status
+  order.lastCheckedAt = Date.now()
+}
 
-    order.attempts += 1
-    order.lastCheckedAt = Date.now()
+export function incrementAttempt(id: string) {
+  const order = orders[id]
+  if (!order) return
+  order.attempts += 1
+  order.lastCheckedAt = Date.now()
+}
 
-    const status = simulateMicrosoftStatus(order)
-    order.status = status
-
-    if (status === "active") return
-    if (order.attempts >= MAX_RETRIES) {
-      order.status = "failed"
-      return
-    }
-    setTimeout(tick, RETRY_INTERVAL_MS)
-  }
-
-  setTimeout(tick, RETRY_INTERVAL_MS)
+export function getOrder(id: string) {
+  return orders[id]
 }
