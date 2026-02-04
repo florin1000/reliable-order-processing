@@ -24,3 +24,8 @@ A compact demo repo that mirrors the article: migrating from **retries + cron** 
 
 ## Notes
 This is a learning/demo repo, not production-ready.
+
+## Quickstart
+1) Start API (Nest): `cd apps/api`
+2) Start Web (Next): `cd apps/web`
+3) Create an order: `POST /orders`
