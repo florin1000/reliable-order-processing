@@ -1,0 +1,18 @@
+import { Injectable, OnModuleInit } from "@nestjs/common"
+import amqp, { Connection, Channel } from "amqplib"
+
+@Injectable()
+export class RabbitMqService implements OnModuleInit {
+  connection: Connection | null = null
+  channel: Channel | null = null
+
+  async onModuleInit() {
+    try {
+      this.connection = await amqp.connect("amqp://localhost:5672")
+      this.channel = await this.connection.createChannel()
+      await this.channel.assertQueue("order-status", { durable: true })
+    } catch {
+      // Demo only: keep app running even if RabbitMQ is not up
+    }
+  }
+}
