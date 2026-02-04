@@ -1,0 +1,15 @@
+{
+  "name": "reliable-order-processing-demo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm --workspace order-api run dev\" \"npm --workspace order-web run dev\"",
+    "dev:api": "npm --workspace order-api run dev",
+    "dev:web": "npm --workspace order-web run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
